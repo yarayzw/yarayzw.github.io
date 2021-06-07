@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="Redis 秒杀功能为什么不用decrdecr 是原子性的，可以防止“超卖”现象发生，但是要考虑秒杀失败时回滚的问题：库存共3件，10个人同时下单，数量为 -7，3个人通过，此时有一个人的后续步骤失败，需要回滚，但 incr 1 没有用，因为数量已经是 -7 了，变成 -6 显然不能恢复可用状态。 Redis 有哪些持久化方式● RDB快照在指定的时间间隔内将内存中的数据写入二进制文件，这种文件就">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Nosql">
+<meta property="og:url" content="https://yarayzw.github.io/2021/05/18/Nosql/index.html">
+<meta property="og:site_name" content="Yara">
+<meta property="og:description" content="Redis 秒杀功能为什么不用decrdecr 是原子性的，可以防止“超卖”现象发生，但是要考虑秒杀失败时回滚的问题：库存共3件，10个人同时下单，数量为 -7，3个人通过，此时有一个人的后续步骤失败，需要回滚，但 incr 1 没有用，因为数量已经是 -7 了，变成 -6 显然不能恢复可用状态。 Redis 有哪些持久化方式● RDB快照在指定的时间间隔内将内存中的数据写入二进制文件，这种文件就">
+<meta property="og:locale">
+<meta property="article:published_time" content="2021-05-18T02:04:55.000Z">
+<meta property="article:modified_time" content="2021-05-18T03:07:02.552Z">
+<meta property="article:author" content="yara">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://yarayzw.github.io/2021/05/18/Nosql/"/>
+
+
+
+
+
+  <title>Nosql | Yara</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Yara</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">yzw</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://yarayzw.github.io/2021/05/18/Nosql/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yara">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Nosql</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-05-18T10:04:55+08:00">
+                2021-05-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%9D%A2%E8%AF%95%E9%97%AE%E9%A2%98/" itemprop="url" rel="index">
+                    <span itemprop="name">面试问题</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2021/05/18/Nosql/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2021/05/18/Nosql/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="Redis-秒杀功能为什么不用decr"><a href="#Redis-秒杀功能为什么不用decr" class="headerlink" title="Redis 秒杀功能为什么不用decr"></a>Redis 秒杀功能为什么不用decr</h2><p>decr 是原子性的，可以防止“超卖”现象发生，但是要考虑秒杀失败时回滚的问题：库存共3件，10个人同时下单，数量为 -7，3个人通过，此时有一个人的后续步骤失败，需要回滚，但 incr 1 没有用，因为数量已经是 -7 了，变成 -6 显然不能恢复可用状态。</p>
+<h2 id="Redis-有哪些持久化方式"><a href="#Redis-有哪些持久化方式" class="headerlink" title="Redis 有哪些持久化方式"></a>Redis 有哪些持久化方式</h2><h3 id="●-RDB快照"><a href="#●-RDB快照" class="headerlink" title="● RDB快照"></a>● RDB快照</h3><p>在指定的时间间隔内将内存中的数据写入二进制文件，这种文件就是 RDB 格式快照，RDB 有三种持久化机制：</p>
+<pre><code>● save：同步持久化。执行过程对 redis 服务是阻塞的，在新的快照被创建后，如果存在旧快照则会进行原子性替换。
+
+● bgsave：异步持久化。主进程会 fork 一个子进程用来进行持久化操作，快照创建后向主进程发送信号。
+优势是：文件经过压缩，适合用来备份；恢复大数据的速度快；每一次都是全量备份。
+缺点是：bgsave 生成快照时，主进程仍可修改数据，在两次备份期间修改的数据不会被保存。
+</code></pre>
+<h3 id="●-AOF文件"><a href="#●-AOF文件" class="headerlink" title="● AOF文件"></a>● AOF文件</h3><pre><code>redis 将每一条命令追加写入到文件中，以 AOF 格式保存。利用 bgrewriteaof 命令可以重构 AOF 文件内容，就是将多条命令压缩成高效的批量命令。AOF 有两种持久化机制：
+
+● always：同步持久化。每次数据发生改变就将命令同步写入磁盘
+
+● everysec：异步持久化。每秒进行记录，如果服务崩溃，最多丢失一秒的数据
+
+优势是：比 RDB 更能保证数据不丢失；AOF 格式是人类可读的，可以进行容灾处理和文件修复，比较灵活。
+缺点是：AOF 文件体积比 RDB 大；恢复速度一般比 RDB 要慢。
+</code></pre>
+<h2 id="Redis-的故障处理"><a href="#Redis-的故障处理" class="headerlink" title="Redis 的故障处理"></a>Redis 的故障处理</h2><p>● 验证持久化文件：redis提供了工具，可以扫描 AOF 文件，发现第一个不完整的命令后，会删除这条命令及之后的所有命令；但损坏的 RDB 快照文件无法修复，最好为快照文件保留多个备份，并通过计算快照的散列值来校验。</p>
+<p>● 替换主服务器：当主服务器出现故障时，首先向从服务器发送 SAVE 命令，然后将从服的快照发送到新启动的主服务器，然后在新的主服务器向从服务器发送 SLAVEOF 命令重建主从链。另一种方法是让从服务器升级为主服务器，并为升级后的主服务器创建从服务器。</p>
+<h2 id="缓存系统面临的问题"><a href="#缓存系统面临的问题" class="headerlink" title="缓存系统面临的问题"></a>缓存系统面临的问题</h2><p>● 缓存穿透：用户不断请求缓存和数据库中都没有的数据（如 id = -1），导致数据库压力过大，解决方案：</p>
+<pre><code>● 将数据库查不到的空值也进行缓存，但过期时间远小于正常数据的过期时间。
+
+● 利用布隆过滤器，将数据映射到过滤器中，查询数据库之前先检查数据是否不存在。
+</code></pre>
+<p>● 缓存击穿：大量用户同时请求缓存中没有，但数据库中有的数据（可能是缓存过期了），导致数据库压力过大，解决方案：</p>
+<pre><code>● 设置热点数据永不过期。
+
+● 请求数据库之前给查询操作加排他锁，阻塞其他事务的查询。
+</code></pre>
+<p>● 缓存雪崩：缓存中大批数据同时过期，当查询量大时导致数据库瞬间压力过大，解决方案：</p>
+<pre><code>● 设置缓存过期时间时，加上一段随机时间，防止缓存同时过期。
+
+● 热点数据可以设置永不过期。
+</code></pre>
+<h2 id="Redis-的数据类型和应用场景"><a href="#Redis-的数据类型和应用场景" class="headerlink" title="Redis 的数据类型和应用场景"></a>Redis 的数据类型和应用场景</h2><p>● string</p>
+<p>● 分布式锁</p>
+<p>● sorted set</p>
+<p>● 计数信号量：利用集合的唯一性和分数排序，判断元素是否超出限制数量。</p>
+<p>● bitmap</p>
+<p>● 用户签到：今天在一年中的天数 a，今年的总天数 n；key 的格式为<code>年份:用户ID</code>，实现为：key = a % n</p>
+<p>● 用户在线状态：按用户 ID 设置位状态即可</p>
+<p>● Bloom 过滤器：由 redis 模块提供</p>
+<h2 id="RabbitMQ-如何保证消息可靠传输"><a href="#RabbitMQ-如何保证消息可靠传输" class="headerlink" title="RabbitMQ 如何保证消息可靠传输"></a>RabbitMQ 如何保证消息可靠传输</h2><p>解决生产者消息丢失问题，可以采用事务或 Confirm 模式，其中 Confirm 的性能比事务要高。<br>解决消息队列消息丢失问题，可以采用消息持久化机制。<br>解决消费者数据丢失问题，可以采用手动确认消息的方式，在消息处理完毕之后应答即可。因为默认的自动确认机制会在收到消息时立刻回复确认，后续可能导致消息丢失。</p>
+<h2 id="项目中引入-RabbitMQ-需要注意什么"><a href="#项目中引入-RabbitMQ-需要注意什么" class="headerlink" title="项目中引入 RabbitMQ 需要注意什么"></a>项目中引入 RabbitMQ 需要注意什么</h2><p>rabbitmq 在分布式系统中作为消息中间件存在，是一种全局服务，引入 mq 将增加系统复杂度，需要注意：</p>
+<p>● 命名的规范：生产者与 exchange、消费者与 queue 的命名应该具有关联性，最好将命名过程进行封装自动创建，让使用者不需要关心命名问题。</p>
+<p>● 消费者的幂等性：网络问题等因素会触发重试机制，所以消费者应该实现幂等。</p>
+<p>● 无序性</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/05/14/Mysql/" rel="next" title="Mysql">
+                <i class="fa fa-chevron-left"></i> Mysql
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2021/05/18/Php/" rel="prev" title="Php">
+                Php <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives">
+              
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-block">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                友情链接
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.alexis-otaku.top/about" title="世界的副班长" target="_blank">世界的副班长</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Redis-%E7%A7%92%E6%9D%80%E5%8A%9F%E8%83%BD%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E7%94%A8decr"><span class="nav-number">1.</span> <span class="nav-text">Redis 秒杀功能为什么不用decr</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Redis-%E6%9C%89%E5%93%AA%E4%BA%9B%E6%8C%81%E4%B9%85%E5%8C%96%E6%96%B9%E5%BC%8F"><span class="nav-number">2.</span> <span class="nav-text">Redis 有哪些持久化方式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%97%8F-RDB%E5%BF%AB%E7%85%A7"><span class="nav-number">2.1.</span> <span class="nav-text">● RDB快照</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%97%8F-AOF%E6%96%87%E4%BB%B6"><span class="nav-number">2.2.</span> <span class="nav-text">● AOF文件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Redis-%E7%9A%84%E6%95%85%E9%9A%9C%E5%A4%84%E7%90%86"><span class="nav-number">3.</span> <span class="nav-text">Redis 的故障处理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%93%E5%AD%98%E7%B3%BB%E7%BB%9F%E9%9D%A2%E4%B8%B4%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">4.</span> <span class="nav-text">缓存系统面临的问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Redis-%E7%9A%84%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E5%92%8C%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">5.</span> <span class="nav-text">Redis 的数据类型和应用场景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RabbitMQ-%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E6%B6%88%E6%81%AF%E5%8F%AF%E9%9D%A0%E4%BC%A0%E8%BE%93"><span class="nav-number">6.</span> <span class="nav-text">RabbitMQ 如何保证消息可靠传输</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A1%B9%E7%9B%AE%E4%B8%AD%E5%BC%95%E5%85%A5-RabbitMQ-%E9%9C%80%E8%A6%81%E6%B3%A8%E6%84%8F%E4%BB%80%E4%B9%88"><span class="nav-number">7.</span> <span class="nav-text">项目中引入 RabbitMQ 需要注意什么</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">yara</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'f02laTHUJfjgDPINDMkJR08C-gzGzoHsz',
+        appKey: 'bvzusBFy3PueochhjyeyUeIv',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

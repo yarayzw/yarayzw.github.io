@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="什么是微服务微服务架构是一种架构风格，提倡将单一应用程序划分成一组小的服务，服务之间互相协调配合。 每个服务都封装着具体业务，独立进行部署构建，服务可以使用不同的语言和组件来实现。一般的微服务由：服务注册与发现，网关，配置中心，消息中心（消息总线），断路器 组成。 微服务的特点低耦合，组件化，单一职责，自治，持续交付，分散治理 微服务之间是如何通讯的● 同步调用例如 REST、gRPC、Thrif">
+<meta property="og:type" content="article">
+<meta property="og:title" content="微服务">
+<meta property="og:url" content="https://yarayzw.github.io/2021/05/14/%E5%BE%AE%E6%9C%8D%E5%8A%A1/index.html">
+<meta property="og:site_name" content="Yara">
+<meta property="og:description" content="什么是微服务微服务架构是一种架构风格，提倡将单一应用程序划分成一组小的服务，服务之间互相协调配合。 每个服务都封装着具体业务，独立进行部署构建，服务可以使用不同的语言和组件来实现。一般的微服务由：服务注册与发现，网关，配置中心，消息中心（消息总线），断路器 组成。 微服务的特点低耦合，组件化，单一职责，自治，持续交付，分散治理 微服务之间是如何通讯的● 同步调用例如 REST、gRPC、Thrif">
+<meta property="og:locale">
+<meta property="article:published_time" content="2021-05-14T09:32:25.000Z">
+<meta property="article:modified_time" content="2021-05-18T03:02:49.595Z">
+<meta property="article:author" content="yara">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://yarayzw.github.io/2021/05/14/微服务/"/>
+
+
+
+
+
+  <title>微服务 | Yara</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Yara</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">yzw</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://yarayzw.github.io/2021/05/14/%E5%BE%AE%E6%9C%8D%E5%8A%A1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yara">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">微服务</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-05-14T17:32:25+08:00">
+                2021-05-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%9D%A2%E8%AF%95%E9%97%AE%E9%A2%98/" itemprop="url" rel="index">
+                    <span itemprop="name">面试问题</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2021/05/14/%E5%BE%AE%E6%9C%8D%E5%8A%A1/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2021/05/14/%E5%BE%AE%E6%9C%8D%E5%8A%A1/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="什么是微服务"><a href="#什么是微服务" class="headerlink" title="什么是微服务"></a>什么是微服务</h2><p>微服务架构是一种架构风格，提倡将单一应用程序划分成一组小的服务，服务之间互相协调配合。 每个服务都封装着具体业务，独立进行部署构建，服务可以使用不同的语言和组件来实现。<br>一般的微服务由：服务注册与发现，网关，配置中心，消息中心（消息总线），断路器 组成。</p>
+<h2 id="微服务的特点"><a href="#微服务的特点" class="headerlink" title="微服务的特点"></a>微服务的特点</h2><p>低耦合，组件化，单一职责，自治，持续交付，分散治理</p>
+<h2 id="微服务之间是如何通讯的"><a href="#微服务之间是如何通讯的" class="headerlink" title="微服务之间是如何通讯的"></a>微服务之间是如何通讯的</h2><p>● 同步调用<br>例如 REST、gRPC、Thrift；优点是：简单和常见，因为没有中间件代理，系统更简单。 缺点是只支持请求/响应的模式，降低了可用性，因为客户端和服务端在请求过程中必须都是可用的。</p>
+<p>● 消息服务<br>例如 Kafka、RabbitMQ；优点是松耦合，提高可用性，支持很多通信机制，例如通知、发布/订阅。 缺点是消息中间件有额外的复杂性，使系统整体变的复杂。</p>
+<h2 id="REST和RPC的区别"><a href="#REST和RPC的区别" class="headerlink" title="REST和RPC的区别"></a>REST和RPC的区别</h2><p>RPC 的隐藏了远程调用这一动作，让用户感觉在调用本地方法。 可以选择多种协议，性能往往比 REST 要好，吐量比较大，响应时间小。适合内部服务之间的通信。 REST 是标准的 HTTP<br>协议，相对来说更标准，更通用，天然支持所有语言，很适合对外开放的 API，而且调用及测试都很方便。</p>
+<h2 id="服务发现的两种模式"><a href="#服务发现的两种模式" class="headerlink" title="服务发现的两种模式"></a>服务发现的两种模式</h2><p>● 客户端发现模式<br>客户端负责确定服务提供者的地址和负载均衡策略，客户端访问服务注册表，定时同步目标服务的实例地址列表，然后选择目标服务的一个可用实例地址发送请求。<br>优点：可以实现去中心化的通讯，避开入口造成的性能瓶颈；客户端可以自己制定负载均衡策略，相对比较灵活。 缺点：服务客户端与服务注册表耦合；SDK 对客户端代码存在入侵。</p>
+<p>● 服务端发现模式<br>客户端通过负载均衡器访问目标服务，负载均衡器负责查询服务注册表并转发请求。Docker 和 K8S 都具有内置的服务注册表和服务发现机制。 优点：部署平台提供服务发现功能，服务和客户端都得到简化；服务发现功能的更新对客户端是无感知的。<br>缺点：后端增加了一次请求转发，增加了运维难度，负载均衡器可能成为性能瓶颈；如果服务发现功能不可用，会导致整个系统瘫痪。</p>
+<h2 id="分布式系统面临的问题"><a href="#分布式系统面临的问题" class="headerlink" title="分布式系统面临的问题"></a>分布式系统面临的问题</h2><p>复杂的分布式服务之间有很多依赖关系，从而引发多种问题：</p>
+<p>● 服务雪崩<br>fanout（调用关系：A-&gt;B-&gt;C）中的一环响应缓慢拖慢下游服务，导致资源越占越多，引发服务雪崩。</p>
+<p>● 级联故障<br>某个依赖服务故障导致其他服务崩溃。</p>
+<p>解决方案是：</p>
+<ol>
+<li>服务熔断<br>某个微服务不可用或者响应时间太长时，则会熔断该节点，快速返回客户端能够处理的”错误”的响应信息</li>
+<li>服务降级<br>在系统层面熔断某个或某一组服务，将资源留给更重要的业务。</li>
+<li>服务限流 限流可以认为是服务降级的一种，通过限制输入和输出流量达到保护系统的目的。</li>
+</ol>
+<h2 id="服务降级与服务熔断的区别"><a href="#服务降级与服务熔断的区别" class="headerlink" title="服务降级与服务熔断的区别"></a>服务降级与服务熔断的区别</h2><p>● 触发原因不大一样。服务熔断一般是某个下游服务发生故障引起，而服务降级一般是从整体负荷考虑。</p>
+<p>● 管理目标层次不一样。熔断是一个框架级的处理，每个服务都需要，无层级之分，而降级一般需要对业务有层级之分。</p>
+<h2 id="服务限流的方法"><a href="#服务限流的方法" class="headerlink" title="服务限流的方法"></a>服务限流的方法</h2><p>● 计数器法： 限制每秒或每分钟的请求数量。缺点是不精确，容易出现 在两个时间点交界处的过量请求。</p>
+<p>● Leaky Bucket： 请求进入一个被限定大小的容器中，超出容量的请求被丢弃，容器按一定速率将请求发放给应用进行处理。</p>
+<p>●<br>Token Bucket： 系统按一定速率，向容器中存入 token，请求获取 token 后才能被处理，如果请求过多，容器被取空时，请求将被丢弃。</p>
+<h2 id="什么是幂等性"><a href="#什么是幂等性" class="headerlink" title="什么是幂等性"></a>什么是幂等性</h2><p>幂等性是能够以同样的方式做两次，而对系统的影响保持不变，就好像它只做了一次的特性。</p>
+<h2 id="如何实现幂等性"><a href="#如何实现幂等性" class="headerlink" title="如何实现幂等性"></a>如何实现幂等性</h2><p>● token机制<br>请求前获取token，并存入 redis 中；请求时将带上 token，业务接口检测 token 是否存在redis 中，存在表示第一次，不存在表示重复提交，直接返回重复标记给客户端。执行完毕后业务接口删除 redis 中的 token.<br>● 版本号机制<br>数据库写操作是原子性的，加上版本号即可实现幂等。</p>
+<figure class="highlight html">
+    <div class="table-container">
+        <table>
+            <tbody>
+            <tr>
+                <td class="gutter">
+                    <pre><span class="line">1</span><br></pre>
+                </td>
+                <td class="code">
+                    <pre><span class="line">update `user` set point = point + 20, version = version + 1 where userid=1 and version=1</span></pre>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</figure>
+
+<h2 id="分布式事务解决方案"><a href="#分布式事务解决方案" class="headerlink" title="分布式事务解决方案"></a>分布式事务解决方案</h2><p>● 二阶段提交 一个事务协调者管理多个参与者的提交和回滚，分为准备阶段和提交阶段。</p>
+<p>● 准备阶段：协调者给参与者发送准备命令，参与者准备资源，但不提交。 </p>
+<p>● 提交阶段：协调者等待所有参与者响应完成后进入第二阶段，如果所有参与者返回成功，则协调者向所有参与者发送提交命令；如果第一阶段中有任何参与者返回失败则向所有参与者发送回滚命令，然后等待参与者响应之后，事务执行完毕。<br>如果第二阶段执行失败，则不断重试，直到成功为止。二阶段提交的优点是强一致性，缺点是二阶段提交是同步阻塞协议，性能较差；协调者存在单点故障问题；基本上只有数据库支持。</p>
+<p>● TCC 补偿机制 TCC指的是 Try - Confirm - Cancel 三种操作：</p>
+<p>● Try：预留资源，这一阶段需要将事务需要的资源进行预留和锁定。 ● Confirm：实际执行操作，使用资源。 </p>
+<p>● Cancel：撤销操作，回退资源，解除锁定 调用者首先执行各服务的 try 动作，如果所有服务返回成功，则调用 confirm，如果有任意服务返回失败，则对所有服务调用 cancel。 TCC<br>的优点是不局限于数据库，可以跨业务系统实现事务；非阻塞协议，性能较好。缺点是对业务代码入侵较大；confirm 和 cancel 操作可能需要重试机制，必须实现幂等性，允许空回滚；不保证强一致性，而是追求最终一致性。</p>
+<p>● 事务消息表<br>事务消息表是一张存储业务操作状态的表，可以用数据库实现。当事务执行时，提交的每一个业务的状态都存储在消息表中，当有某个业务执行失败，则由后台定时任务读取事务消息表不断重试，一般会有一个最大重试次数，超过最大次数后发出通知，让人工处理。优点是实现起来比较简单，缺点是必须实现幂等性；不保证强一致性。</p>
+<p>● Saga事务模型 saga 事务模型分为多个小型事务，每个事务提交成功后，会发布一条通知来触发下一个事务执行。如果有一个事务失败，则执行之前提交成功的 所有事务的补偿操作进行回滚。saga 的实现方式分为两种：</p>
+<p>● 基于事件<br>每个事务提交之后都会像系统派发一个事件，其他事务监听事件来决定是否执行或回滚。优点是各参与者之间完全解耦；缺点是在参与者很多的情况下会变得难以维护，还容易造成环形监听。 </p>
+<p>● 基于命令<br>单独创建一个服务作为协调者，协调者通过发送命令，接收回复的方式与其他服务进行交互，协调者根据各服务的回复消息决定提交或回滚。优点是避免了环形依赖；事务逻辑清晰，容易维护。缺点是增加了一个协调者服务。</p>
+<h2 id="什么是蓝绿发布"><a href="#什么是蓝绿发布" class="headerlink" title="什么是蓝绿发布"></a>什么是蓝绿发布</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/lijiaocn/article/details/84276591">https://blog.csdn.net/lijiaocn/article/details/84276591</a></p>
+<h2 id="什么是金丝雀布"><a href="#什么是金丝雀布" class="headerlink" title="什么是金丝雀布"></a>什么是金丝雀布</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/lijiaocn/article/details/84276591">https://blog.csdn.net/lijiaocn/article/details/84276591</a><br><a target="_blank" rel="noopener" href="http://www.mabiji.com/wiki/canary.html">http://www.mabiji.com/wiki/canary.html</a></p>
+<p>开始时，使用HTTP Header<br>匹配指定测试人员的流量到新版本上，然后当新版本内部测试通过后，可以再按百分比，将用户流量一点一点导入到新版本中观察一下运行情况，直到将流量全部导入到新版本上，最后完成升级；发现问题就立即取消升级，将流量切回到老版本。</p>
+<h2 id="什么是滚动发布"><a href="#什么是滚动发布" class="headerlink" title="什么是滚动发布"></a>什么是滚动发布</h2><p>每次只升级一个或多个服务（非全部），加入生产环境；不断执行这个过程，直到集群中的全部旧版本完成升级。 优点：节约资源，用户无感知。 缺点：部署时间慢，发布策略较复杂，不好验证服务，不宜回滚</p>
+<h2 id="A-B测式和金丝雀发布的区别"><a href="#A-B测式和金丝雀发布的区别" class="headerlink" title="A/B测式和金丝雀发布的区别"></a>A/B测式和金丝雀发布的区别</h2><p>金丝雀是发布策略，目标是确保新上线的系统稳定，关注的是新系统的BUG、隐患。 A/B测试是效果测试，同一时间有多个版本的服务对外开放，这些服务都达到了上线标准，A/B测试关注的是不同版本的服务效果（业务上的）。</p>
+<h2 id="服务的拆分原则"><a href="#服务的拆分原则" class="headerlink" title="服务的拆分原则"></a>服务的拆分原则</h2><p>● 单一职责 </p>
+<p>● 避免环形依赖双向依赖 </p>
+<p>● 服务粒度适中- 演进式拆分</p>
+<p>● 尽量避免分布事务</p>
+<p>总体原则：当一个业务不依赖或极少依赖其他服务，有独立的业务语义，为超过两个其他服务提供接口，那就应该拆分为独立服务，还应当与业务人员协同工作。 项目前期避免依靠经验法则拆分，应该等业务稳定下来，业务边界明确后再做拆分。</p>
+<h2 id="JWT-的验签方式和优缺点"><a href="#JWT-的验签方式和优缺点" class="headerlink" title="JWT 的验签方式和优缺点"></a>JWT 的验签方式和优缺点</h2><p>数字签名是通过散列算法，从 header 和 payload 部分生成摘要数据并进行加密得到。加密方式分为： ● 对称加密 通过唯一密钥进行对称加密，验签时需要将 token<br>发送到授权中心进行校验，优点是简单，适合单块系统；缺点是每个请求都要通过授权中心。 ● 非对称加密<br>通过授权中心的私钥加密，其他服务可以保存公钥，直接使用公钥验签即可。优点是可以通过公钥验签，减少授权中心压力；缺点是签名操作执行的比较慢，性能不高。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2021/05/14/Mysql/" rel="prev" title="Mysql">
+                Mysql <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives">
+              
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-block">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                友情链接
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.alexis-otaku.top/about" title="世界的副班长" target="_blank">世界的副班长</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%BE%AE%E6%9C%8D%E5%8A%A1"><span class="nav-number">1.</span> <span class="nav-text">什么是微服务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BE%AE%E6%9C%8D%E5%8A%A1%E7%9A%84%E7%89%B9%E7%82%B9"><span class="nav-number">2.</span> <span class="nav-text">微服务的特点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BE%AE%E6%9C%8D%E5%8A%A1%E4%B9%8B%E9%97%B4%E6%98%AF%E5%A6%82%E4%BD%95%E9%80%9A%E8%AE%AF%E7%9A%84"><span class="nav-number">3.</span> <span class="nav-text">微服务之间是如何通讯的</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#REST%E5%92%8CRPC%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">4.</span> <span class="nav-text">REST和RPC的区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%A8%A1%E5%BC%8F"><span class="nav-number">5.</span> <span class="nav-text">服务发现的两种模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F%E9%9D%A2%E4%B8%B4%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">6.</span> <span class="nav-text">分布式系统面临的问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E9%99%8D%E7%BA%A7%E4%B8%8E%E6%9C%8D%E5%8A%A1%E7%86%94%E6%96%AD%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">7.</span> <span class="nav-text">服务降级与服务熔断的区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E9%99%90%E6%B5%81%E7%9A%84%E6%96%B9%E6%B3%95"><span class="nav-number">8.</span> <span class="nav-text">服务限流的方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%B9%82%E7%AD%89%E6%80%A7"><span class="nav-number">9.</span> <span class="nav-text">什么是幂等性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E5%B9%82%E7%AD%89%E6%80%A7"><span class="nav-number">10.</span> <span class="nav-text">如何实现幂等性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="nav-number">11.</span> <span class="nav-text">分布式事务解决方案</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E8%93%9D%E7%BB%BF%E5%8F%91%E5%B8%83"><span class="nav-number">12.</span> <span class="nav-text">什么是蓝绿发布</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E9%87%91%E4%B8%9D%E9%9B%80%E5%B8%83"><span class="nav-number">13.</span> <span class="nav-text">什么是金丝雀布</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E6%BB%9A%E5%8A%A8%E5%8F%91%E5%B8%83"><span class="nav-number">14.</span> <span class="nav-text">什么是滚动发布</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#A-B%E6%B5%8B%E5%BC%8F%E5%92%8C%E9%87%91%E4%B8%9D%E9%9B%80%E5%8F%91%E5%B8%83%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">15.</span> <span class="nav-text">A&#x2F;B测式和金丝雀发布的区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E7%9A%84%E6%8B%86%E5%88%86%E5%8E%9F%E5%88%99"><span class="nav-number">16.</span> <span class="nav-text">服务的拆分原则</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JWT-%E7%9A%84%E9%AA%8C%E7%AD%BE%E6%96%B9%E5%BC%8F%E5%92%8C%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="nav-number">17.</span> <span class="nav-text">JWT 的验签方式和优缺点</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">yara</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'f02laTHUJfjgDPINDMkJR08C-gzGzoHsz',
+        appKey: 'bvzusBFy3PueochhjyeyUeIv',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

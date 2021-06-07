@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="分布式锁的类型和原理● 乐观锁 乐观锁首先假设数据没有冲突，不会阻塞对资源的修改，而是在资源被实际修改之前，检查锁定期间是否被其他进程修改，如果资源被修改了，就返回错误信息给用户，让用户决定后续操作。● 悲观锁 在资源处理过程中，让资源处于锁定状态，其他试图修改资源的进程将被阻塞。悲观锁主要分为： ● 共享锁：又称读锁，如果资源被加上了共享锁，则只能读取而不能修改资源，其他事务也只能再对该资源加共">
+<meta property="og:type" content="article">
+<meta property="og:title" content="并发控制">
+<meta property="og:url" content="https://yarayzw.github.io/2021/05/18/%E5%B9%B6%E5%8F%91%E6%8E%A7%E5%88%B6/index.html">
+<meta property="og:site_name" content="Yara">
+<meta property="og:description" content="分布式锁的类型和原理● 乐观锁 乐观锁首先假设数据没有冲突，不会阻塞对资源的修改，而是在资源被实际修改之前，检查锁定期间是否被其他进程修改，如果资源被修改了，就返回错误信息给用户，让用户决定后续操作。● 悲观锁 在资源处理过程中，让资源处于锁定状态，其他试图修改资源的进程将被阻塞。悲观锁主要分为： ● 共享锁：又称读锁，如果资源被加上了共享锁，则只能读取而不能修改资源，其他事务也只能再对该资源加共">
+<meta property="og:locale">
+<meta property="article:published_time" content="2021-05-18T02:26:07.000Z">
+<meta property="article:modified_time" content="2021-05-18T03:07:02.584Z">
+<meta property="article:author" content="yara">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://yarayzw.github.io/2021/05/18/并发控制/"/>
+
+
+
+
+
+  <title>并发控制 | Yara</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Yara</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">yzw</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://yarayzw.github.io/2021/05/18/%E5%B9%B6%E5%8F%91%E6%8E%A7%E5%88%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yara">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">并发控制</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-05-18T10:26:07+08:00">
+                2021-05-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%9D%A2%E8%AF%95%E9%97%AE%E9%A2%98/" itemprop="url" rel="index">
+                    <span itemprop="name">面试问题</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2021/05/18/%E5%B9%B6%E5%8F%91%E6%8E%A7%E5%88%B6/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2021/05/18/%E5%B9%B6%E5%8F%91%E6%8E%A7%E5%88%B6/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="分布式锁的类型和原理"><a href="#分布式锁的类型和原理" class="headerlink" title="分布式锁的类型和原理"></a>分布式锁的类型和原理</h2><p>● 乐观锁</p>
+<p>乐观锁首先假设数据没有冲突，不会阻塞对资源的修改，而是在资源被实际修改之前，检查锁定期间是否被其他进程修改，如果资源被修改了，就返回错误信息给用户，让用户决定后续操作。<br>● 悲观锁</p>
+<p>在资源处理过程中，让资源处于锁定状态，其他试图修改资源的进程将被阻塞。悲观锁主要分为：</p>
+<pre><code>● 共享锁：又称读锁，如果资源被加上了共享锁，则只能读取而不能修改资源，其他事务也只能再对该资源加共享锁，而不能加排他锁。也就是在释放共享锁之前只能读取资源，而不能对资源做任何修改。一个共享锁可以同时被多个进程占有。
+
+● 排他锁：又称写锁，如果资源被加上了排它锁，则该事务可以读取和修改资源，但其他事务不能再对该资源加任何锁，直到排它锁被释放为止。一个排它锁在同一时刻只能被一个进程所占有。
+</code></pre>
+<p>● 公平锁</p>
+<p>多个线程按照申请锁的顺序获得锁，所有线程都排队等待。队列中的第一个线程获得锁，其他线程都被阻塞，直到锁被释放。</p>
+<p>优点是：所有线程都能获得锁，不会出现饥饿现象。</p>
+<p>缺点是：吞吐量下降</p>
+<p>● 非公平锁<br>多个线程并发尝试获取锁，获取不到的线程重新进入等待状态，锁被释放后再次抢占。<br>优点是：吞吐量提高<br>缺点是：竞争可能导致某些线程一直获取不到锁。</p>
+<p>● RedLock<br>RedLock 是排他锁的一种，是用于解决缓存服务（如 redis）单点崩溃造成分布式锁不可用的容灾策略。原理是，从 3 个独立的缓存服务中获取锁，如果能够从至少两个服务中获取到锁，就证明加锁成功。这样就能保证即使某个缓存节点挂掉，分布式锁服务仍然可用。<br>存在的问题：</p>
+<p>● 为了避免与某个故障的节点通信时间过长。需要为加锁操作设置一个快速失败时间。</p>
+<p>● 如何释放锁：判断该节点上的锁是不是自己设置的，如果是就删除；向所有节点发出释放锁的请求（即使认为没有从该节点获取锁也要发出请求）。</p>
+<p>● 多个服务同时抢占锁，造成没有任何服务能够获得大部分数量的锁（3个服务抢3个锁，每个服务获得一个）。解决方案是在检测到自己没有获得大部分锁时，立即释放锁，并在随机时间后尝试重新获取</p>
+<h2 id="同步器的类型和原理"><a href="#同步器的类型和原理" class="headerlink" title="同步器的类型和原理"></a>同步器的类型和原理</h2><p>● 计数信号量<br>用来控制同时访问特定资源的线程数量（控制并发量）。计数信号量是一种具有最大许可数量的锁，其他线程从信号量获取许可，当发放的许可数量达到最大值时，资源将被锁定，其他线程无法继续获得许可，直到某个许可被释放为止。这种机制限制了资源在同一时间的并发访问量。</p>
+<p>● CountDownLatch（wait group）<br>CountDownLatch 能够阻塞一个线程，并等待其他线程执行完毕后再继续执行。它的内部包含一个计数器，初始值是等待的线程数量，每当一个线程执行完毕，就将计数器减 1，当计数器被减到 0 时结束阻塞状态。</p>
+<h2 id="常见的并发模型"><a href="#常见的并发模型" class="headerlink" title="常见的并发模型"></a>常见的并发模型</h2><p>● Fork/Join 模型：将任务划分为多个小任务，并行计算，等待计算结果后 再合并为一个大任务。</p>
+<p>● Actor 模型：是 Erlang 的并发模型；Actor 是模型中的 worker，Actor 的状态是封闭的，外部无法访问，多个 actor 之间通过异步消息传递信息，actor 可以对消息做出相应，还可以派生出新的 actor，actor 内部可以阻塞，但对于主线程是非阻塞的。</p>
+<p>● CSP 模型：是 Golang 的并发模型，与 Actor 类似，但与 actor 不同的是，CSP 使用 channel 发送消息，而不是直接发送给 worker，CSP 的发送动作是同步阻塞的（SCP 有 buffering channel 的概念，在 buffer 未满的情况下是非阻塞的）。相对的， Actor 则是在内部维护一个消息队列，也是按顺序解析消息的，但通信过程不会阻塞。CSP 的 worker 之间没有耦合，而 Actor 可能产生耦合。</p>
+<p>● 生产消费模型：使用缓存保存任务，开启多个线程生产任务，再开启多个线程从缓存中取出任务进行处理。生产者与消费者不存在耦合，并且可以根据生产速度调整消费者数量。</p>
+<p>● Master-Worker 模型：Master 进程负责接收任务，并把任务分配给 Worker，worker 进程负责处理子任务，并将结果返回给 master，接收到结果后进行归纳汇总，得到最终结果。</p>
+<p>● Promise 模型：Promise 指代用于取得计算结果的代理或容器，该容器初始并不包含结果，只有当计算完成时结果才被填充。可以通过等待或回调获取结果。</p>
+<h2 id="Unix-环境下的-I-O-模型"><a href="#Unix-环境下的-I-O-模型" class="headerlink" title="Unix 环境下的 I/O 模型"></a>Unix 环境下的 I/O 模型</h2><p>● 阻塞式 I/O：当发起 read 等操作进行读取时，内核会检查数据是否准备就绪，如果没有准备好，则线程会进入阻塞状态开始等待，直到数据准备完毕后，内核主动将数据复制到应用程序缓冲区。</p>
+<p>● 非阻塞式 I/O：当发起 read 等操作时，内核会检查数据是否准备就绪，如果没有准备好，则立刻返回一个错误，如果检测到数据准备完毕，则返回可用状态，用户可以通知内核将数据复制到应用程序缓冲区。</p>
+<p>● I/O 多路复用：阻塞一个线程，让内核不断轮询句柄状态，当有任何一个句柄的数据准备完毕，就会返回通知给调用方，调用方通过遍历获取可用句柄进行读取。</p>
+<p>● 信号驱动式 I/O：内核检测到数据准备后，通过信号通知用户进程，用户进程收到信号后，从内核将数据复制到应用程序缓冲区。</p>
+<p>● 异步I/O（AIO）：内核检测到数据准备后，内核主动将数据复制到应用程序缓冲区，然后通过信号通知用户进程数据准备完毕。</p>
+<h2 id="为什么多路复用需要搭配非阻塞-I-O"><a href="#为什么多路复用需要搭配非阻塞-I-O" class="headerlink" title="为什么多路复用需要搭配非阻塞 I/O"></a>为什么多路复用需要搭配非阻塞 I/O</h2><p>数据可能会被其他进程读走，内核也可能会校验和丢弃某些已准备好的数据，但 select 则将这些句柄标记为已准备好，这时没有 accept 到的线程将被阻塞。</p>
+<h2 id="协程中调用阻塞式-I-O-会阻塞整个线程吗"><a href="#协程中调用阻塞式-I-O-会阻塞整个线程吗" class="headerlink" title="协程中调用阻塞式 I/O 会阻塞整个线程吗"></a>协程中调用阻塞式 I/O 会阻塞整个线程吗</h2><p>会，协程是用户态的调度任务，操作系统中并没有协程的概念，所以以线程的角度看，协程实际上是同步阻塞执行的。而某些支持协程的编程语言，会将语言层面的同步阻塞语法在底层实现为操作系统层面的异步功能，从而支持协程内部的“阻塞”操作。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/05/18/Php/" rel="next" title="Php">
+                <i class="fa fa-chevron-left"></i> Php
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2021/05/18/Web/" rel="prev" title="Web">
+                Web <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives">
+              
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-block">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                友情链接
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.alexis-otaku.top/about" title="世界的副班长" target="_blank">世界的副班长</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E7%9A%84%E7%B1%BB%E5%9E%8B%E5%92%8C%E5%8E%9F%E7%90%86"><span class="nav-number">1.</span> <span class="nav-text">分布式锁的类型和原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%8C%E6%AD%A5%E5%99%A8%E7%9A%84%E7%B1%BB%E5%9E%8B%E5%92%8C%E5%8E%9F%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">同步器的类型和原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E8%A7%81%E7%9A%84%E5%B9%B6%E5%8F%91%E6%A8%A1%E5%9E%8B"><span class="nav-number">3.</span> <span class="nav-text">常见的并发模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Unix-%E7%8E%AF%E5%A2%83%E4%B8%8B%E7%9A%84-I-O-%E6%A8%A1%E5%9E%8B"><span class="nav-number">4.</span> <span class="nav-text">Unix 环境下的 I&#x2F;O 模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8%E9%9C%80%E8%A6%81%E6%90%AD%E9%85%8D%E9%9D%9E%E9%98%BB%E5%A1%9E-I-O"><span class="nav-number">5.</span> <span class="nav-text">为什么多路复用需要搭配非阻塞 I&#x2F;O</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%8F%E7%A8%8B%E4%B8%AD%E8%B0%83%E7%94%A8%E9%98%BB%E5%A1%9E%E5%BC%8F-I-O-%E4%BC%9A%E9%98%BB%E5%A1%9E%E6%95%B4%E4%B8%AA%E7%BA%BF%E7%A8%8B%E5%90%97"><span class="nav-number">6.</span> <span class="nav-text">协程中调用阻塞式 I&#x2F;O 会阻塞整个线程吗</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">yara</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'f02laTHUJfjgDPINDMkJR08C-gzGzoHsz',
+        appKey: 'bvzusBFy3PueochhjyeyUeIv',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

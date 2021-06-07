@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="OAuth2的四种模式是什么●  授权码模式 ●  隐式授权模式 ●  密码模式 ●  客户端凭证模式 1）授权码模式●  访问一个 authorize 的界面，地址带上 response_type, client_id, redirect_uri, scope, state ●  用户登录后点击授权，然后跳转到 redirect_uri 的地址，地址携带授权码（code）和 state ●  网">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Web">
+<meta property="og:url" content="https://yarayzw.github.io/2021/05/18/Web/index.html">
+<meta property="og:site_name" content="Yara">
+<meta property="og:description" content="OAuth2的四种模式是什么●  授权码模式 ●  隐式授权模式 ●  密码模式 ●  客户端凭证模式 1）授权码模式●  访问一个 authorize 的界面，地址带上 response_type, client_id, redirect_uri, scope, state ●  用户登录后点击授权，然后跳转到 redirect_uri 的地址，地址携带授权码（code）和 state ●  网">
+<meta property="og:locale">
+<meta property="article:published_time" content="2021-05-18T02:30:57.000Z">
+<meta property="article:modified_time" content="2021-05-18T03:07:02.595Z">
+<meta property="article:author" content="yara">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://yarayzw.github.io/2021/05/18/Web/"/>
+
+
+
+
+
+  <title>Web | Yara</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Yara</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">yzw</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://yarayzw.github.io/2021/05/18/Web/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Yara">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Web</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-05-18T10:30:57+08:00">
+                2021-05-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%9D%A2%E8%AF%95%E9%97%AE%E9%A2%98/" itemprop="url" rel="index">
+                    <span itemprop="name">面试问题</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2021/05/18/Web/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count valine-comment-count" data-xid="/2021/05/18/Web/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="OAuth2的四种模式是什么"><a href="#OAuth2的四种模式是什么" class="headerlink" title="OAuth2的四种模式是什么"></a>OAuth2的四种模式是什么</h2><p>●  授权码模式</p>
+<p>●  隐式授权模式</p>
+<p>●  密码模式</p>
+<p>●  客户端凭证模式</p>
+<h3 id="1）授权码模式"><a href="#1）授权码模式" class="headerlink" title="1）授权码模式"></a>1）授权码模式</h3><p>●  访问一个 authorize 的界面，地址带上 <code>response_type</code>, <code>client_id</code>, <code>redirect_uri</code>, <code>scope</code>, <code>state</code></p>
+<p>●  用户登录后点击授权，然后跳转到 <code>redirect_uri</code> 的地址，地址携带授权码（<code>code</code>）和 <code>state</code></p>
+<p>●  网站得到 code 以后可以在后端请求获取 access token。请求携带: <code>client_id</code>, <code>client_secret</code>, <code>grant_type</code>, <code>code</code>, <code>redirect_uri</code>;</p>
+<p>●  授权服务器收到 token 请求后验证 <code>client_id</code> 和 <code>client_secret</code>, <code>code</code>, <code>grant_type</code> 是固定的 <code>authorization_code</code> 表示授权码模式</p>
+<p>●  将 token 发送到 <code>redirect_uri</code> 的地址，携带 <code>access_token</code>, <code>token_type</code>, <code>expires_in</code>, <code>refresh_token</code><br>response_type 是 code</p>
+<h3 id="2）隐式授权模式"><a href="#2）隐式授权模式" class="headerlink" title="2）隐式授权模式"></a>2）隐式授权模式</h3><p>●  访问一个 authorize 的界面，地址带上 <code>response_type</code>, <code>client_id</code>, <code>redirect_uri</code>, <code>scope</code></p>
+<p>●  授权服务器将 access token 以锚点的形式发送给 <code>redirect_uri</code>（锚点不会发送到服务器，可以防止中间人攻击）。<br>response_type 是 token，只能用于一些安全要求不高的场景，会话时间短。</p>
+<h3 id="3）密码模式"><a href="#3）密码模式" class="headerlink" title="3）密码模式"></a>3）密码模式</h3><p>●  直接 post 访问授权服务器，<code>grant_type</code> 是 <code>password</code>, 携带 <code>client_id</code>, <code>username</code>, <code>password</code></p>
+<h3 id="4）客户端凭证模式"><a href="#4）客户端凭证模式" class="headerlink" title="4）客户端凭证模式"></a>4）客户端凭证模式</h3><p>●  直接 post 访问授权服务器，<code>grant_type</code> 是 <code>client_credentials</code>, 携带 <code>client_id</code>, <code>client_secret</code></p>
+<p>●  授权服务器验证后直接返回 access token<br>这个一般是针对第三方应用的，而不是针对用户的，即可能多个用户共享同一个令牌。</p>
+<h2 id="怎样更新AccessToken"><a href="#怎样更新AccessToken" class="headerlink" title="怎样更新AccessToken"></a>怎样更新AccessToken</h2><p>●  向授权服务器发送请求, <code>client_id</code>, <code>client_secret</code>, <code>refresh_token</code>, <code>grant_type</code> 是 refresh_token</p>
+<p>●  授权服务器验证后直接返回新的 access token</p>
+<h2 id="OpenId认证"><a href="#OpenId认证" class="headerlink" title="OpenId认证"></a>OpenId认证</h2><p>●  访问 authorize 地址，<code>response_type</code> 为 id_token 或 <code>code id_token</code>; <code>client_id</code>, <code>redirect_uri</code>, <code>state</code></p>
+<p>●  授权服务器将 <code>id_token</code> 返回。<br>OpenId Connect 也包括显式和隐式授权以上为隐式；id_token 通常包含用户信息，如果不包含，则应该用 accessToken 访问 userinfo 接口获取。</p>
+<h2 id="TCP建立和断开连接过程"><a href="#TCP建立和断开连接过程" class="headerlink" title="TCP建立和断开连接过程"></a>TCP建立和断开连接过程</h2><p>TCP 使用 Flags（标志位）实现可靠连接服务，Flags 长度为 6 bits，每一位都表示一种连接状态：</p>
+<p>● SYN：建立连接</p>
+<p>● FIN：关闭连接</p>
+<p>● ACK：响应</p>
+<p>● PSH：表示有数据传输</p>
+<p>● RST：连接重置</p>
+<p>● URG：紧急</p>
+<p>MSL 表示 TCP 报文最大生存时间，指任意报文在网络中存在的最大时间，超过这个时间，报文将被丢弃。<br>现在有主机 A 和主机 B</p>
+<h2 id="建立连接过程："><a href="#建立连接过程：" class="headerlink" title="建立连接过程："></a>建立连接过程：</h2><p>● A 产生一个随机数（seqA）的数据包，并将 flags 的 SYN 置为 1 发送给主机 B，表示 A要求建立连接</p>
+<p>● B 收到请求后，也向 A 发送一个数据包，其中包含 flags (SYN=1, ACK=1)，ask_number=seqA+1，和一个随机数（seqB）</p>
+<p>● A 收到应答后，检查 ACK 码位是否为 1，ask_number 是否正确，如果正确，A 会再向 B 发送一个数据包，包含 flags (SYN=1, ACK=1)，ask_number=seqB+1</p>
+<p>● B 收响应后，检查 ACK 码位是否为 1，ask_number 是否正确，如果正确则表示建立连接成功</p>
+<h2 id="断开连接的过程："><a href="#断开连接的过程：" class="headerlink" title="断开连接的过程："></a>断开连接的过程：</h2><p>● A 向 B 发送 flags(FIN=1) 和一个序列号（seq=a）的数据包，进入 FIN-WAIT-1 阶段，表示 A 没有数据要向 B 发送了</p>
+<p>● B 收到请求后，向 A 发送 flags(ACK=1)，序列号（seq=b）和确认号（ack=a+1）的数据包来确认 A 的请求，这时 B 仍可以向 A 发送数据</p>
+<p>● B 做好断开连接的准备后，再次向 A 发送 flags(FIN=1, ACK=1)，序列号（seq=c）和确认号（ack=a+1），随后 B 停止向 A 发送数据</p>
+<p>● A 收到请求并验证，之后向 B 发送flags(ACK=1)，序列号（seq=a+1）和确认号（ack=ack+1）的数据包，随后 A 等待 2 MSL 之后进入 CLOSED 阶段。</p>
+<p>为什么断开连接客户端最后要等待 2MSL<br>因为最后的 ASK 包可能会丢失，服务器发现客户端没有回应 ASK，于是重新发送了 SYN，ASK 包，客户端就能在 2SML内收到重发报文，并且发送ASK报文，并重置 2SML 计时器。</p>
+<h2 id="TLS-SSL建立连接过程"><a href="#TLS-SSL建立连接过程" class="headerlink" title="TLS/SSL建立连接过程"></a>TLS/SSL建立连接过程</h2><p>●  客户端明文发送 协议版本、压缩算法候选列表、加密套件候选列表、随机数 等信息</p>
+<p>●  服务端返回 协议版本、加密套件、压缩算法、另一个随机数，通知客户端信息发送结束</p>
+<p>●  服务端将自己的 CA 证书通过响应报文发送给客户端</p>
+<p>●  客户端验证证书是否有效（CA机构的签名，过期时间等），验证通过后，取出证书中的公钥，再生成一个随机数，并用公钥加密生成一个 key</p>
+<p>●  客户端将 key 发送给服务端，此时客户端和服务端都使用 3 个随机数加密得到<code>协商秘钥</code></p>
+<p>●  客户端采用协商密钥与算法，将之前所有通信参数的 hash 值加密发送给服务器用于数据与握手验证</p>
+<p>●  服务端计算之前所有接收信息的 hash 值，然后解密客户端发送的验证信息并验证</p>
+<p>●  服务端也和客户端做同样的操作，将通信参数的 hash 值加密传给客服端</p>
+<p>●  客户端验证通过连接建立成功</p>
+<h2 id="什么是透明代理"><a href="#什么是透明代理" class="headerlink" title="什么是透明代理"></a>什么是透明代理</h2><p>也叫强制代理，可以在不修改请求和响应的情况下重定向它们。客户端直接向真实服务器发起连接，代理机拦截请求并与客户端建立连接，然后以客户端 ip 与真实服务器进行请求转发，所以对于客户端和服务器来说，代理机都是透明的。<br>透明代理的作用：</p>
+<p>● 可以通过透明代理解决地域网络延迟问题。</p>
+<p>● 企业行为管理软件。</p>
+<h2 id="跨站脚本攻击"><a href="#跨站脚本攻击" class="headerlink" title="跨站脚本攻击"></a>跨站脚本攻击</h2><p>通过恶意脚本对客户端网页进行篡改，将一些隐私数据如 cookie 发送给攻击者，或将受害者重定向到一个由攻击者控制的网站进行一些恶意操作。解决方案是：</p>
+<p>●  转义用户输入。</p>
+<p>●  在 cookie 中使用 HttpOnly 选项，防止对 cookie 的获取</p>
+<h2 id="重放攻击"><a href="#重放攻击" class="headerlink" title="重放攻击"></a>重放攻击</h2><p>指攻击者发送一个目标主机已接收过的包，来达到欺骗系统的目的。解决方案是使用 https 加时间戳参数，另一种方案是请求带上一个随机数，如果随机数已使用过就证明是重放攻击。</p>
+<h2 id="SYN-Flood-攻击"><a href="#SYN-Flood-攻击" class="headerlink" title="SYN Flood 攻击"></a>SYN Flood 攻击</h2><p>发送大量伪造的 TCP 连接请求，用假冒的IP发送海量的【第一个握手包 SYN 包】；被攻击的服务器返回第二个握手包 SYN + ACK，而对方不会回应第三个握手包，导致服务器保持大量半连接 HTTP 信道，并且默认重试5次回应第二个握手包。导致正常 SYN 包排不上队，连接不进来</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/05/18/%E5%B9%B6%E5%8F%91%E6%8E%A7%E5%88%B6/" rel="next" title="并发控制">
+                <i class="fa fa-chevron-left"></i> 并发控制
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives">
+              
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-block">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                友情链接
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.alexis-otaku.top/about" title="世界的副班长" target="_blank">世界的副班长</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#OAuth2%E7%9A%84%E5%9B%9B%E7%A7%8D%E6%A8%A1%E5%BC%8F%E6%98%AF%E4%BB%80%E4%B9%88"><span class="nav-number">1.</span> <span class="nav-text">OAuth2的四种模式是什么</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1%EF%BC%89%E6%8E%88%E6%9D%83%E7%A0%81%E6%A8%A1%E5%BC%8F"><span class="nav-number">1.1.</span> <span class="nav-text">1）授权码模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2%EF%BC%89%E9%9A%90%E5%BC%8F%E6%8E%88%E6%9D%83%E6%A8%A1%E5%BC%8F"><span class="nav-number">1.2.</span> <span class="nav-text">2）隐式授权模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3%EF%BC%89%E5%AF%86%E7%A0%81%E6%A8%A1%E5%BC%8F"><span class="nav-number">1.3.</span> <span class="nav-text">3）密码模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4%EF%BC%89%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%87%AD%E8%AF%81%E6%A8%A1%E5%BC%8F"><span class="nav-number">1.4.</span> <span class="nav-text">4）客户端凭证模式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%8E%E6%A0%B7%E6%9B%B4%E6%96%B0AccessToken"><span class="nav-number">2.</span> <span class="nav-text">怎样更新AccessToken</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OpenId%E8%AE%A4%E8%AF%81"><span class="nav-number">3.</span> <span class="nav-text">OpenId认证</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TCP%E5%BB%BA%E7%AB%8B%E5%92%8C%E6%96%AD%E5%BC%80%E8%BF%9E%E6%8E%A5%E8%BF%87%E7%A8%8B"><span class="nav-number">4.</span> <span class="nav-text">TCP建立和断开连接过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8B%E8%BF%9E%E6%8E%A5%E8%BF%87%E7%A8%8B%EF%BC%9A"><span class="nav-number">5.</span> <span class="nav-text">建立连接过程：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%AD%E5%BC%80%E8%BF%9E%E6%8E%A5%E7%9A%84%E8%BF%87%E7%A8%8B%EF%BC%9A"><span class="nav-number">6.</span> <span class="nav-text">断开连接的过程：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TLS-SSL%E5%BB%BA%E7%AB%8B%E8%BF%9E%E6%8E%A5%E8%BF%87%E7%A8%8B"><span class="nav-number">7.</span> <span class="nav-text">TLS&#x2F;SSL建立连接过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E9%80%8F%E6%98%8E%E4%BB%A3%E7%90%86"><span class="nav-number">8.</span> <span class="nav-text">什么是透明代理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B7%A8%E7%AB%99%E8%84%9A%E6%9C%AC%E6%94%BB%E5%87%BB"><span class="nav-number">9.</span> <span class="nav-text">跨站脚本攻击</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%87%8D%E6%94%BE%E6%94%BB%E5%87%BB"><span class="nav-number">10.</span> <span class="nav-text">重放攻击</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SYN-Flood-%E6%94%BB%E5%87%BB"><span class="nav-number">11.</span> <span class="nav-text">SYN Flood 攻击</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">yara</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: 'f02laTHUJfjgDPINDMkJR08C-gzGzoHsz',
+        appKey: 'bvzusBFy3PueochhjyeyUeIv',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
